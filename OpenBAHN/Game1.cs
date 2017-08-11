@@ -23,7 +23,12 @@ namespace OpenBAHN
         Texture2D tile1;
         Texture2D tile2;
         Texture2D select;
-        int[,][] worldTiles = new int[20, 20][];
+        //int[][] worldTiles = new int[0][];
+        List<List<int>> worldTiles = new List<List<int>>();
+        // element 0: X
+        // element 1: Y
+        // element 2: ID
+        // further elements: parameters (vary by tile type)
         int selectedTileX = 0;
         int selectedTileY = 0;
         int test = 3;
@@ -119,15 +124,18 @@ namespace OpenBAHN
             KeyboardState placeKeyState = Keyboard.GetState();
             if (placeKeyState.IsKeyDown(Keys.D0))
             {
-                worldTiles[selectedTileX, selectedTileY][0] = 0;
+                //worldTiles[selectedTileX, selectedTileY][0] = 0;
+                writeTile(true, 0, 0, 0);
             }
             if (placeKeyState.IsKeyDown(Keys.D1))
             {
-                worldTiles[selectedTileX, selectedTileY][0] = 1;
+                //worldTiles[selectedTileX, selectedTileY][0] = 1;
+                writeTile(true, 0, 0, 1);
             }
             if (placeKeyState.IsKeyDown(Keys.D2))
             {
-                worldTiles[selectedTileX, selectedTileY][0] = 2;
+                //worldTiles[selectedTileX, selectedTileY][0] = 2;
+                writeTile(true, 0, 0, 2);
             }
             base.Update(gameTime);
         }
@@ -150,30 +158,7 @@ namespace OpenBAHN
             {
                 while (x < 20)
                 {
-                    /*// let's see what ID is an element
-                    try
-                    {
-                        if (worldTiles[x, y][0] == null)
-                        {
-                            throw new ArgumentNullException();
-                        }
-                    }
-                    catch
-                    {
-                        id = 0;
-                    }
-                    finally
-                    {
-                        //id = worldTiles[x, y][0];
-                        id = 1;
-                    }
-                    /*id = 0;
-                    if (worldTiles[x, y][0] == null)
-                    {
-                        throw new ArgumentNullException();
-                        //id = worldTiles[x, y][0];
-                    }*/
-                    id = 0;
+                    id = getTileID(x, y);
                     spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + id), new Rectangle(x * 40, (y * 20) - 20, tile.Width, tile.Height), Color.White);
                     x++;
                 }
@@ -184,6 +169,50 @@ namespace OpenBAHN
             spriteBatch.Draw(select, new Rectangle(selectedTileX * 40, selectedTileY * 20, select.Width, select.Height), Color.White);
             spriteBatch.End();
             base.Draw(gameTime);
+        }
+        // methods
+        void writeTile(bool actualPos, int x, int y, int ID, int[] parameters = null)
+        {
+            List<int> composition = new List<int>();
+            // adding three obligatory parameters
+            if (actualPos)
+            {
+                composition.Add(selectedTileX);
+                composition.Add(selectedTileY);
+            }
+            else
+            {
+                composition.Add(x);
+                composition.Add(y);
+            }
+            composition.Add(ID);
+            // next, a number of optional parameters
+            parameters = parameters ?? new int[0];
+            foreach (int parameter in parameters)
+            {
+                composition.Add(parameter);
+            }
+            worldTiles.Add(composition);
+        }
+        void writeTileIDActualPos(int ID)
+        {
+            writeTile(true, selectedTileX, selectedTileY, ID);
+        }
+        int getTileID(int x, int y)
+        {
+            return getTileParameter(x, y, 0);
+        }
+        int getTileParameter(int x, int y, int parameter)
+        {
+            int returnValue = 0; // in case when there isn't any tile in that position
+            foreach (List<int> composition in worldTiles)
+            {
+                if (composition[0] == x && composition[1] == y)
+                {
+                    returnValue = composition[parameter + 2];
+                }
+            }
+            return returnValue;
         }
     }
 }
