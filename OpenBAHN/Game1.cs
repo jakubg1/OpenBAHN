@@ -29,6 +29,7 @@ namespace OpenBAHN
         // element 1: Y
         // element 2: ID
         // further elements: parameters (vary by tile type)
+        int[] tileList = { 0, 1, 2, 3, 4, 8, 9, 10, 11, 12 };
         int selectedTileX = 0;
         int selectedTileY = 0;
         int test = 3;
@@ -122,20 +123,45 @@ namespace OpenBAHN
             }
             // placing an object
             KeyboardState placeKeyState = Keyboard.GetState();
-            if (placeKeyState.IsKeyDown(Keys.D0))
-            {
-                //worldTiles[selectedTileX, selectedTileY][0] = 0;
-                deleteTile(true, 0, 0);
-            }
             if (placeKeyState.IsKeyDown(Keys.D1))
             {
-                //worldTiles[selectedTileX, selectedTileY][0] = 1;
-                writeTile(true, 0, 0, 1);
+                writeTile(true, 0, 0, tileList[0]);
             }
             if (placeKeyState.IsKeyDown(Keys.D2))
             {
-                //worldTiles[selectedTileX, selectedTileY][0] = 2;
-                writeTile(true, 0, 0, 2);
+                writeTile(true, 0, 0, tileList[1]);
+            }
+            if (placeKeyState.IsKeyDown(Keys.D3))
+            {
+                writeTile(true, 0, 0, tileList[2]);
+            }
+            if (placeKeyState.IsKeyDown(Keys.D4))
+            {
+                writeTile(true, 0, 0, tileList[3]);
+            }
+            if (placeKeyState.IsKeyDown(Keys.D5))
+            {
+                writeTile(true, 0, 0, tileList[4]);
+            }
+            if (placeKeyState.IsKeyDown(Keys.D6))
+            {
+                writeTile(true, 0, 0, tileList[5]);
+            }
+            if (placeKeyState.IsKeyDown(Keys.D7))
+            {
+                writeTile(true, 0, 0, tileList[6]);
+            }
+            if (placeKeyState.IsKeyDown(Keys.D8))
+            {
+                writeTile(true, 0, 0, tileList[7]);
+            }
+            if (placeKeyState.IsKeyDown(Keys.D9))
+            {
+                writeTile(true, 0, 0, tileList[8]);
+            }
+            if (placeKeyState.IsKeyDown(Keys.D0))
+            {
+                writeTile(true, 0, 0, tileList[9]);
             }
             base.Update(gameTime);
         }
@@ -175,27 +201,31 @@ namespace OpenBAHN
         {
             // deleting a tile first to don't have 2 elements in one tile
             deleteTile(actualPos, x, y);
-            List<int> composition = new List<int>();
-            // adding three obligatory parameters
-            if (actualPos)
+            // when ID is 0 then we only delete a tile so we skip code below
+            if (ID != 0)
             {
-                composition.Add(selectedTileX);
-                composition.Add(selectedTileY);
+                List<int> composition = new List<int>();
+                // adding three obligatory parameters
+                if (actualPos)
+                {
+                    composition.Add(selectedTileX);
+                    composition.Add(selectedTileY);
+                }
+                else
+                {
+                    composition.Add(x);
+                    composition.Add(y);
+                }
+                composition.Add(ID);
+                // next, a number of optional parameters
+                parameters = parameters ?? new int[0];
+                foreach (int parameter in parameters)
+                {
+                    composition.Add(parameter);
+                }
+                // adding to a global list
+                worldTiles.Add(composition);
             }
-            else
-            {
-                composition.Add(x);
-                composition.Add(y);
-            }
-            composition.Add(ID);
-            // next, a number of optional parameters
-            parameters = parameters ?? new int[0];
-            foreach (int parameter in parameters)
-            {
-                composition.Add(parameter);
-            }
-            // adding to a global list
-            worldTiles.Add(composition);
         }
         void deleteTile(bool actualPos, int x, int y)
         {
