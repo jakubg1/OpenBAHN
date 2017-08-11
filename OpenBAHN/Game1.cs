@@ -125,7 +125,7 @@ namespace OpenBAHN
             if (placeKeyState.IsKeyDown(Keys.D0))
             {
                 //worldTiles[selectedTileX, selectedTileY][0] = 0;
-                writeTile(true, 0, 0, 0);
+                deleteTile(true, 0, 0);
             }
             if (placeKeyState.IsKeyDown(Keys.D1))
             {
@@ -173,6 +173,8 @@ namespace OpenBAHN
         // methods
         void writeTile(bool actualPos, int x, int y, int ID, int[] parameters = null)
         {
+            // deleting a tile first to don't have 2 elements in one tile
+            deleteTile(actualPos, x, y);
             List<int> composition = new List<int>();
             // adding three obligatory parameters
             if (actualPos)
@@ -192,11 +194,22 @@ namespace OpenBAHN
             {
                 composition.Add(parameter);
             }
+            // adding to a global list
             worldTiles.Add(composition);
         }
-        void writeTileIDActualPos(int ID)
+        void deleteTile(bool actualPos, int x, int y)
         {
-            writeTile(true, selectedTileX, selectedTileY, ID);
+            int setx = x;
+            int sety = y;
+            if (actualPos)
+            {
+                setx = selectedTileX;
+                sety = selectedTileY;
+            }
+            if (getTileItem(setx, sety) != -1)
+            {
+                worldTiles.RemoveAt(getTileItem(setx, sety));
+            }
         }
         int getTileID(int x, int y)
         {
@@ -213,6 +226,19 @@ namespace OpenBAHN
                 }
             }
             return returnValue;
+        }
+        int getTileItem(int x, int y)
+        {
+            int returnValue = 0; // as above
+            foreach (List<int> composition in worldTiles)
+            {
+                if (composition[0] == x && composition[1] == y)
+                {
+                    return returnValue;
+                }
+                returnValue++;
+            }
+            return -1;
         }
     }
 }
