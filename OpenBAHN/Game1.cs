@@ -18,12 +18,7 @@ namespace OpenBAHN
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-        Texture2D tile;
-        Texture2D tile0;
-        Texture2D tile1;
-        Texture2D tile2;
         Texture2D select;
-        //int[][] worldTiles = new int[0][];
         List<List<int>> worldTiles = new List<List<int>>();
         // element 0: X
         // element 1: Y
@@ -32,7 +27,6 @@ namespace OpenBAHN
         int[] tileList = { 0, 1, 2, 3, 4, 8, 9, 10, 11, 12 };
         int selectedTileX = 0;
         int selectedTileY = 0;
-        int test = 3;
         bool canMove = true;
 
         public Game1()
@@ -64,10 +58,6 @@ namespace OpenBAHN
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            tile = Content.Load<Texture2D>(@"tile/id" + test);
-            tile0 = Content.Load<Texture2D>(@"tile/id0");
-            tile1 = Content.Load<Texture2D>(@"tile/id1");
-            tile2 = Content.Load<Texture2D>(@"tile/id2");
             select = Content.Load<Texture2D>(@"tile/marker");
         }
 
@@ -185,7 +175,7 @@ namespace OpenBAHN
                 while (x < 20)
                 {
                     id = getTileID(x, y);
-                    spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + id), new Rectangle(x * 40, (y * 20) - 20, tile.Width, tile.Height), Color.White);
+                    spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + id), new Rectangle(x * 40, (y * 20) - 20, 40, 60), Color.White);
                     x++;
                 }
                 x = 0;
