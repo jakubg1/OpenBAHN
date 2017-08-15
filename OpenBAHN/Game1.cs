@@ -112,6 +112,18 @@ namespace OpenBAHN
             }
             // placing an object
             KeyboardState placeKeyState = Keyboard.GetState();
+            if (placeKeyState.IsKeyDown(Keys.S))
+            {
+                save();
+            }
+            if (placeKeyState.IsKeyDown(Keys.L))
+            {
+                load();
+            }
+            if (placeKeyState.IsKeyDown(Keys.C))
+            {
+                clearWorld();
+            }
             if (placeKeyState.IsKeyDown(Keys.D1))
             {
                 writeTileCurrent(tileList[0]);
@@ -188,7 +200,50 @@ namespace OpenBAHN
         // methods
         void save()
         {
-            // System.IO.File.WriteAllBytes(@"C:\Users\Public\TestFolder\WriteLines.txt", worldTiles);
+            string composition = "";
+            foreach (List<int> composition2 in worldTiles)
+            {
+                foreach (int text in composition2)
+                {
+                    composition += Convert.ToString(text) + ",";
+                }
+                composition += "\n";
+            }
+            System.IO.File.WriteAllText(@"C:\Users\Public\Test\WriteLines.txt", composition);
+        }
+
+        void load()
+        {
+            string[] composition = System.IO.File.ReadAllLines(@"C:\Users\Public\Test\WriteLines.txt"); // open a file and store every line in one item in array
+            foreach (string composition2 in composition) // for each item in array
+            {
+                string composition3 = ""; // we use it for compose a number from characters
+                List<int> parameters = new List<int>(); // this list will contain data that we will write in global tiles list
+                foreach (char letter in composition2) // for each letter in string like that: "13,5,3,"
+                {
+                    if (letter != ',') // it's not new parameter so we continue composing a number
+                    {
+                        composition3 += letter; // composing
+                    }
+                    if (letter == ',') // after comma we go to new parameter, so we add composed number to the list of parameters; it's important to place a comma after last parameter
+                    {
+                        parameters.Add(Convert.ToInt32(composition3)); // adding
+                        composition3 = ""; // don't forget to clear composed number; now we are ready to compose a new parameter
+                    }
+                }
+                int[] composition4 = new int[parameters.Count - 3]; // we create a new array for the rest - parameters
+                for (int i = 0; i < parameters.Count - 3; i++)
+                {
+                    composition4[i] = parameters[i + 3];
+                }
+                writeTile(parameters[0], parameters[1], parameters[2], composition4); // after that, we are ready to add a new tile to the world...
+                parameters.Clear(); // and clear the list
+            }
+        }
+
+        void clearWorld()
+        {
+            worldTiles.Clear();
         }
 
         void writeTile(int x, int y, int ID, int[] parameters = null)
@@ -252,7 +307,7 @@ namespace OpenBAHN
             return returnValue;
         }
 
-        int getTileParameterNumber(int x, int y)
+        int getTileParametersQuantity(int x, int y)
         {
             if (getTileItem(x, y) != -1)
             {
