@@ -26,6 +26,7 @@ namespace OpenBAHN
         // further elements: parameters (vary by tile type)
         int[] tileList = { 0, 1, 2, 3, 4, 8, 9, 10, 11, 12 };
         int[] currentTile = { 0, 0 };
+        Int64 tickStart = Environment.TickCount;
         bool canMove = true;
 
         public Game1()
@@ -43,7 +44,8 @@ namespace OpenBAHN
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
+            // delete old log
+            System.IO.File.WriteAllText(@"C:\Users\Public\Test\log.txt", "");
             base.Initialize();
         }
 
@@ -120,7 +122,7 @@ namespace OpenBAHN
             {
                 load();
             }
-            if (placeKeyState.IsKeyDown(Keys.C))
+            if (placeKeyState.IsKeyDown(Keys.C) && worldTiles.Count > 0)
             {
                 clearWorld();
             }
@@ -214,7 +216,11 @@ namespace OpenBAHN
 
         void load()
         {
+            Int64 tick = Environment.TickCount;
+            writeLog("Loading started");
+            clearWorld(); // first, we clear actual world
             string[] composition = System.IO.File.ReadAllLines(@"C:\Users\Public\Test\WriteLines.txt"); // open a file and store every line in one item in array
+            writeLog("Read from file successful");
             foreach (string composition2 in composition) // for each item in array
             {
                 string composition3 = ""; // we use it for compose a number from characters
@@ -228,36 +234,52 @@ namespace OpenBAHN
                     if (letter == ',') // after comma we go to new parameter, so we add composed number to the list of parameters; it's important to place a comma after last parameter
                     {
                         parameters.Add(Convert.ToInt32(composition3)); // adding
+                        writeLog("Parsed a parameter: " + Convert.ToString(composition3));
                         composition3 = ""; // don't forget to clear composed number; now we are ready to compose a new parameter
                     }
                 }
+                writeLog("Started additional parameters parsing.");
                 int[] composition4 = new int[parameters.Count - 3]; // we create a new array for the rest - parameters
                 for (int i = 0; i < parameters.Count - 3; i++)
                 {
                     composition4[i] = parameters[i + 3];
                 }
+                writeLog("Parameters parsed: " + Convert.ToString(composition4.Length));
                 writeTile(parameters[0], parameters[1], parameters[2], composition4); // after that, we are ready to add a new tile to the world...
-                parameters.Clear(); // and clear the list
+                parameters.Clear(); // and clear the list for next tile
+            }
+            tick = (tick - Environment.TickCount) * -1;
+            writeLog("World loaded successfully in " + Convert.ToString(tick) + " milliseconds.");
+        }
+
+        void writeLog(string text)
+        {
+            using (System.IO.StreamWriter log = new System.IO.StreamWriter(@"C:\Users\Public\Test\log.txt", true))
+            {
+                Int64 tick = Environment.TickCount - tickStart;
+                log.WriteLine("Tick " + Convert.ToString(tick) + ": " + text);
             }
         }
 
         void clearWorld()
         {
+            writeLog("World clearing started");
             worldTiles.Clear();
+            writeLog("World cleared");
         }
 
-        void writeTile(int x, int y, int ID, int[] parameters = null)
+        void writeTile(int x, int y, int id, int[] parameters = null)
         {
             // deleting a tile first to don't have 2 elements in one tile
             deleteTile(x, y);
             // when ID is 0 then we only delete a tile so we skip code below
-            if (ID != 0)
+            if (id != 0)
             {
                 List<int> composition = new List<int>();
                 // adding three obligatory parameters
                 composition.Add(x);
                 composition.Add(y);
-                composition.Add(ID);
+                composition.Add(id);
                 // next, a number of optional parameters
                 parameters = parameters ?? new int[0];
                 foreach (int parameter in parameters)
@@ -267,11 +289,12 @@ namespace OpenBAHN
                 // adding to a global list
                 worldTiles.Add(composition);
             }
+            writeLog("Tile placed in X: " + Convert.ToString(x) + " Y: " + Convert.ToString(y) + ". ID: " + Convert.ToString(id) + " Parameters: " + intArrayToString(parameters));
         }
 
-        void writeTileCurrent(int ID, int[] parameters = null)
+        void writeTileCurrent(int id, int[] parameters = null)
         {
-            writeTile(currentTile[0], currentTile[1], ID, parameters);
+            writeTile(currentTile[0], currentTile[1], id, parameters);
         }
 
         void deleteTile(int x, int y)
@@ -331,6 +354,22 @@ namespace OpenBAHN
                 returnValue++;
             }
             return -1;
+        }
+
+        string intArrayToString(int[] parameters)
+        {
+            string returnValue = "";
+            int iterationsLeft = parameters.Length;
+            foreach (int parameter in parameters)
+            {
+                iterationsLeft--;
+                returnValue += parameter;
+                if (iterationsLeft > 0)
+                {
+                    returnValue += ", ";
+                }
+            }
+            return returnValue;
         }
     }
 }
