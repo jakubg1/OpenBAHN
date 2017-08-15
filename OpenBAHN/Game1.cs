@@ -25,8 +25,7 @@ namespace OpenBAHN
         // element 2: ID
         // further elements: parameters (vary by tile type)
         int[] tileList = { 0, 1, 2, 3, 4, 8, 9, 10, 11, 12 };
-        int selectedTileX = 0;
-        int selectedTileY = 0;
+        int[] currentTile = { 0, 0 };
         bool canMove = true;
 
         public Game1()
@@ -88,22 +87,22 @@ namespace OpenBAHN
             {
                 if (moveKeyState.IsKeyDown(Keys.Down))
                 {
-                    selectedTileY += 1;
+                    currentTile[1] += 1;
                     canMove = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Up))
                 {
-                    selectedTileY -= 1;
+                    currentTile[1] -= 1;
                     canMove = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Left))
                 {
-                    selectedTileX -= 1;
+                    currentTile[0] -= 1;
                     canMove = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Right))
                 {
-                    selectedTileX += 1;
+                    currentTile[0] += 1;
                     canMove = false;
                 }
             }
@@ -115,43 +114,43 @@ namespace OpenBAHN
             KeyboardState placeKeyState = Keyboard.GetState();
             if (placeKeyState.IsKeyDown(Keys.D1))
             {
-                writeTile(true, 0, 0, tileList[0]);
+                writeTileCurrent(tileList[0]);
             }
             if (placeKeyState.IsKeyDown(Keys.D2))
             {
-                writeTile(true, 0, 0, tileList[1]);
+                writeTileCurrent(tileList[1]);
             }
             if (placeKeyState.IsKeyDown(Keys.D3))
             {
-                writeTile(true, 0, 0, tileList[2]);
+                writeTileCurrent(tileList[2]);
             }
             if (placeKeyState.IsKeyDown(Keys.D4))
             {
-                writeTile(true, 0, 0, tileList[3]);
+                writeTileCurrent(tileList[3]);
             }
             if (placeKeyState.IsKeyDown(Keys.D5))
             {
-                writeTile(true, 0, 0, tileList[4]);
+                writeTileCurrent(tileList[4]);
             }
             if (placeKeyState.IsKeyDown(Keys.D6))
             {
-                writeTile(true, 0, 0, tileList[5]);
+                writeTileCurrent(tileList[5]);
             }
             if (placeKeyState.IsKeyDown(Keys.D7))
             {
-                writeTile(true, 0, 0, tileList[6]);
+                writeTileCurrent(tileList[6]);
             }
             if (placeKeyState.IsKeyDown(Keys.D8))
             {
-                writeTile(true, 0, 0, tileList[7]);
+                writeTileCurrent(tileList[7]);
             }
             if (placeKeyState.IsKeyDown(Keys.D9))
             {
-                writeTile(true, 0, 0, tileList[8]);
+                writeTileCurrent(tileList[8]);
             }
             if (placeKeyState.IsKeyDown(Keys.D0))
             {
-                writeTile(true, 0, 0, tileList[9]);
+                writeTileCurrent(tileList[9]);
             }
             base.Update(gameTime);
         }
@@ -182,30 +181,27 @@ namespace OpenBAHN
                 y++;
             }
             // mark selected tile
-            spriteBatch.Draw(select, new Rectangle(selectedTileX * 40, selectedTileY * 20, select.Width, select.Height), Color.White);
+            spriteBatch.Draw(select, new Rectangle(currentTile[0] * 40, currentTile[1] * 20, select.Width, select.Height), Color.White);
             spriteBatch.End();
             base.Draw(gameTime);
         }
         // methods
-        void writeTile(bool actualPos, int x, int y, int ID, int[] parameters = null)
+        void save()
+        {
+            // System.IO.File.WriteAllBytes(@"C:\Users\Public\TestFolder\WriteLines.txt", worldTiles);
+        }
+
+        void writeTile(int x, int y, int ID, int[] parameters = null)
         {
             // deleting a tile first to don't have 2 elements in one tile
-            deleteTile(actualPos, x, y);
+            deleteTile(x, y);
             // when ID is 0 then we only delete a tile so we skip code below
             if (ID != 0)
             {
                 List<int> composition = new List<int>();
                 // adding three obligatory parameters
-                if (actualPos)
-                {
-                    composition.Add(selectedTileX);
-                    composition.Add(selectedTileY);
-                }
-                else
-                {
-                    composition.Add(x);
-                    composition.Add(y);
-                }
+                composition.Add(x);
+                composition.Add(y);
                 composition.Add(ID);
                 // next, a number of optional parameters
                 parameters = parameters ?? new int[0];
@@ -217,24 +213,32 @@ namespace OpenBAHN
                 worldTiles.Add(composition);
             }
         }
-        void deleteTile(bool actualPos, int x, int y)
+
+        void writeTileCurrent(int ID, int[] parameters = null)
+        {
+            writeTile(currentTile[0], currentTile[1], ID, parameters);
+        }
+
+        void deleteTile(int x, int y)
         {
             int setx = x;
             int sety = y;
-            if (actualPos)
-            {
-                setx = selectedTileX;
-                sety = selectedTileY;
-            }
             if (getTileItem(setx, sety) != -1)
             {
                 worldTiles.RemoveAt(getTileItem(setx, sety));
             }
         }
+
+        void deleteTileCurrent()
+        {
+            deleteTile(currentTile[0], currentTile[1]);
+        }
+
         int getTileID(int x, int y)
         {
             return getTileParameter(x, y, 0);
         }
+
         int getTileParameter(int x, int y, int parameter)
         {
             int returnValue = 0; // in case when there isn't any tile in that position
@@ -247,9 +251,22 @@ namespace OpenBAHN
             }
             return returnValue;
         }
+
+        int getTileParameterNumber(int x, int y)
+        {
+            if (getTileItem(x, y) != -1)
+            {
+                return worldTiles[getTileItem(x, y)].Count - 3;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
         int getTileItem(int x, int y)
         {
-            int returnValue = 0; // as above
+            int returnValue = 0;
             foreach (List<int> composition in worldTiles)
             {
                 if (composition[0] == x && composition[1] == y)
