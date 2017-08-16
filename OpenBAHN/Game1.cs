@@ -26,9 +26,10 @@ namespace OpenBAHN
         // further elements: parameters (vary by tile type)
         int[] tileList = { 0, 1, 2, 3, 4, 8, 9, 10, 11, 12 };
         int[] currentTile = { 0, 0 };
-        Int64 tickStart = Environment.TickCount;
+        const Int64 tickStart = Environment.TickCount;
         bool canMove = true;
         bool canPlace = true;
+        const string currentVersion = "Alpha0.0.1"; // remember to change every release!
 
         public Game1()
         {
@@ -49,6 +50,7 @@ namespace OpenBAHN
             IsMouseVisible = true;
             // delete old log
             System.IO.File.WriteAllText(@"C:\Users\Public\Test\log.txt", "");
+            writeLog("Current version: " + currentVersion);
             base.Initialize();
         }
 
@@ -224,7 +226,8 @@ namespace OpenBAHN
             Int64 tick = Environment.TickCount;
             writeLog("Saving started");
             string composition = "";
-            foreach (List<int> composition2 in worldTiles)
+            composition += currentVersion + "\n#\n"; // version
+            foreach (List<int> composition2 in worldTiles) // tracks
             {
                 foreach (int parameter in composition2)
                 {
@@ -242,55 +245,103 @@ namespace OpenBAHN
         {
             Int64 tick = Environment.TickCount;
             writeLog("Loading started");
-            clearWorld(); // first, we clear actual world
+            clearWorld(); // first, we clear current world
             string[] composition = System.IO.File.ReadAllLines(@"C:\Users\Public\Test\WriteLines.txt"); // open a file and store every line in one item in array
             writeLog("Read from file successful");
-            foreach (string composition2 in composition) // for each item in array
+            int loadingStage = 0; // 0 - file format version, 1 - tracks, 2 - track scripts, 3 - trains, 4 - train scripts
+            bool abort = false; // if true there is error and loading is aborted
+            foreach (string line in composition) // for each item in array
             {
-                string composition3 = ""; // we use it for compose a number from characters
-                List<int> parameters = new List<int>(); // this list will contain data that we will write in global tiles list
-                foreach (char letter in composition2) // for each letter in string like that: "13,5,3,"
+                if (line == "#") // a hash ends a segment of loaded file
                 {
-                    if (letter != ',') // it's not new parameter so we continue composing a number
+                    loadingStage++;
+                    writeLog("Ended parsing a segment of data loading. New stage: " + loadingStage);
+                }
+                else // we do this because when it's a new segment it parses this hash so it can do unexpected behavior
+                {
+                    if (loadingStage == 0)
                     {
-                        composition3 += letter; // composing
+                        writeLog("File version: " + line);
+                        if (line == currentVersion)
+                        {
+                            writeLog("Versions match!");
+                        }
+                        else
+                        {
+                            writeLog("Versions does not match! Loading version list to check that this save is not saved in newer version...");
+                            string[] versions = System.IO.File.ReadAllLines(@"C:\Users\Public\Test\versions.txt"); // it works as above
+                            foreach (string version in versions)
+                            {
+                                if (line == version)
+                                {
+                                    writeLog("This file was saved in older version. Let's check data systems...");
+                                    writeLog("Data systems are the same in both versions. Continue loading.");
+                                    break;
+                                }
+                                writeLog("It seems that this file was saved in newer version. File not loaded due to data corruption risk.");
+                                abort = true;
+                            }
+                        }
                     }
-                    if (letter == ',') // after comma we go to new parameter, so we add composed number to the list of parameters; it's important to place a comma after last parameter
+                    if (loadingStage == 1)
                     {
-                        try
+                        string composedNumber = ""; // we use it for compose a number from characters
+                        List<int> parameters = new List<int>(); // this list will contain data that we will write in global tiles list
+                        foreach (char letter in line) // for each letter in string like that: "13,5,3,"
                         {
-                            parameters.Add(Convert.ToInt32(composition3)); // adding
-                            writeLog("Parsed a parameter: " + composition3);
+                            if (letter != ',') // it's not new parameter so we continue composing a number
+                            {
+                                composedNumber += letter; // composing
+                            }
+                            if (letter == ',') // after comma we go to new parameter, so we add composed number to the list of parameters; it's important to place a comma after last parameter
+                            {
+                                try
+                                {
+                                    parameters.Add(Convert.ToInt32(composedNumber)); // adding
+                                    writeLog("Parsed a parameter: " + composedNumber);
+                                }
+                                catch (FormatException)
+                                {
+                                    writeLog("Can not convert this parameter: " + composedNumber + ", skipping...");
+                                }
+                                finally
+                                {
+                                    composedNumber = ""; // don't forget to clear composed number; now we are ready to compose a new parameter
+                                }
+                            }
                         }
-                        catch (FormatException)
+                        writeLog("Started additional parameters parsing.");
+                        if (parameters.Count >= 3) // a X, Y and ID values
                         {
-                            writeLog("Can not convert this parameter: " + composition3 + ", skipping...");
+                            int[] composedParameters = new int[parameters.Count - 3]; // we create a new array for the rest - parameters
+                            for (int i = 0; i < parameters.Count - 3; i++)
+                            {
+                                composedParameters[i] = parameters[i + 3];
+                            }
+                            writeLog("Parameters parsed: " + composedParameters.Length);
+                            writeTile(parameters[0], parameters[1], parameters[2], composedParameters); // after that, we are ready to add a new tile to the world...
                         }
-                        finally
+                        else
                         {
-                            composition3 = ""; // don't forget to clear composed number; now we are ready to compose a new parameter
+                            writeLog("Error, not enough parameters. To avoid exception, a tile was not added :(");
                         }
+                        parameters.Clear(); // and clear the list for next tile
                     }
                 }
-                writeLog("Started additional parameters parsing.");
-                if (parameters.Count >= 3)
+                if (abort)
                 {
-                    int[] composition4 = new int[parameters.Count - 3]; // we create a new array for the rest - parameters
-                    for (int i = 0; i < parameters.Count - 3; i++)
-                    {
-                        composition4[i] = parameters[i + 3];
-                    }
-                    writeLog("Parameters parsed: " + composition4.Length);
-                    writeTile(parameters[0], parameters[1], parameters[2], composition4); // after that, we are ready to add a new tile to the world...
+                    break;
                 }
-                else
-                {
-                    writeLog("Error, not enough parameters. To avoid exception, a tile was not added :(");
-                }
-                parameters.Clear(); // and clear the list for next tile
             }
             tick = (tick - Environment.TickCount) * -1;
-            writeLog("World loaded successfully in " + tick + " milliseconds.");
+            if (abort)
+            {
+                writeLog("World was not loaded successfully. Time wasted: " + tick + "ms.");
+            }
+            else
+            {
+                writeLog("World loaded successfully in " + tick + " milliseconds.");
+            }
         }
 
         void writeLog(string text)
