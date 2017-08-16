@@ -223,7 +223,7 @@ namespace OpenBAHN
         public static Int64 tickStart = Environment.TickCount;
         public static bool canMove = true;
         public static bool canPlace = true;
-        public static const string currentVersion = "Alpha0.0.1"; // remember to change every release!
+        public const string currentVersion = "Alpha0.0.1"; // remember to change every release!
     }
     public class File
     {
