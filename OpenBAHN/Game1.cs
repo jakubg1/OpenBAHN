@@ -28,6 +28,7 @@ namespace OpenBAHN
         int[] currentTile = { 0, 0 };
         Int64 tickStart = Environment.TickCount;
         bool canMove = true;
+        bool canPlace = true;
 
         public Game1()
         {
@@ -180,19 +181,15 @@ namespace OpenBAHN
             // TODO: Add your drawing code here
             spriteBatch.Begin();
             // draw tiles
-            int x = 0;
-            int y = 0;
-            int id = 0;
-            while (y < 24)
+            for (int y = 0; y < 24; y++)
             {
-                while (x < 20)
+                for (int x = 0; x < 20; x++)
                 {
-                    id = getTileID(x, y);
-                    spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + id), new Rectangle(x * 40, (y * 20) - 20, 40, 60), Color.White);
-                    x++;
+                    if (getTileID(x, y) != 0)
+                    {
+                        spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + getTileID(x, y)), new Rectangle(x * 40, (y * 20) - 20, 40, 60), Color.White);
+                    }
                 }
-                x = 0;
-                y++;
             }
             // mark selected tile
             spriteBatch.Draw(select, new Rectangle(currentTile[0] * 40, currentTile[1] * 20, select.Width, select.Height), Color.White);
@@ -202,16 +199,21 @@ namespace OpenBAHN
         // methods
         void save()
         {
+            Int64 tick = Environment.TickCount;
+            writeLog("Saving started");
             string composition = "";
             foreach (List<int> composition2 in worldTiles)
             {
-                foreach (int text in composition2)
+                foreach (int parameter in composition2)
                 {
-                    composition += Convert.ToString(text) + ",";
+                    composition += Convert.ToString(parameter) + ",";
+                    writeLog("Parameter saved: " + Convert.ToString(parameter));
                 }
                 composition += "\n";
             }
             System.IO.File.WriteAllText(@"C:\Users\Public\Test\WriteLines.txt", composition);
+            tick = (tick - Environment.TickCount) * -1;
+            writeLog("World saved successfully in " + Convert.ToString(tick) + " milliseconds.");
         }
 
         void load()
@@ -358,18 +360,26 @@ namespace OpenBAHN
 
         string intArrayToString(int[] parameters)
         {
+            parameters = parameters ?? new int[0]; // to not cause a crash
             string returnValue = "";
             int iterationsLeft = parameters.Length;
-            foreach (int parameter in parameters)
+            if (iterationsLeft > 0)
             {
-                iterationsLeft--;
-                returnValue += parameter;
-                if (iterationsLeft > 0)
+                foreach (int parameter in parameters)
                 {
-                    returnValue += ", ";
+                    iterationsLeft--;
+                    returnValue += parameter;
+                    if (iterationsLeft > 0)
+                    {
+                        returnValue += ", ";
+                    }
                 }
+                return returnValue;
             }
-            return returnValue;
+            else
+            {
+                return "none";
+            }
         }
     }
 }
