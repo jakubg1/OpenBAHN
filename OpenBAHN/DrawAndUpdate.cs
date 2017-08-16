@@ -14,24 +14,13 @@ namespace OpenBAHN
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    public class Game1 : Microsoft.Xna.Framework.Game
+    public class DrawAndUpdate : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Texture2D select;
-        List<List<int>> worldTiles = new List<List<int>>();
-        // element 0: X
-        // element 1: Y
-        // element 2: ID
-        // further elements: parameters (vary by tile type)
-        int[] tileList = { 0, 1, 2, 3, 4, 8, 9, 10, 11, 12 };
-        int[] currentTile = { 0, 0 };
-        Int64 tickStart = Environment.TickCount;
-        bool canMove = true;
-        bool canPlace = true;
-        const string currentVersion = "Alpha0.0.1"; // remember to change every release!
 
-        public Game1()
+        public DrawAndUpdate()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -50,7 +39,7 @@ namespace OpenBAHN
             IsMouseVisible = true;
             // delete old log
             System.IO.File.WriteAllText(@"C:\Users\Public\Test\log.txt", "");
-            writeLog("Current version: " + currentVersion);
+            Log.writeLog("Current version: " + Data.currentVersion);
             base.Initialize();
         }
 
@@ -90,106 +79,106 @@ namespace OpenBAHN
             // TODO: Add your update logic here
             // moving the cursor
             KeyboardState moveKeyState = Keyboard.GetState();
-            if (canMove || moveKeyState.IsKeyDown(Keys.LeftShift)) //moving without Shift is used for precise positioning, with Shift is used for fast moving around world
+            if (Data.canMove || moveKeyState.IsKeyDown(Keys.LeftShift)) //moving without Shift is used for precise positioning, with Shift is used for fast moving around world
             {
                 if (moveKeyState.IsKeyDown(Keys.Down))
                 {
-                    currentTile[1] += 1;
-                    canMove = false;
+                    Data.currentTile[1] += 1;
+                    Data.canMove = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Up))
                 {
-                    currentTile[1] -= 1;
-                    canMove = false;
+                    Data.currentTile[1] -= 1;
+                    Data.canMove = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Left))
                 {
-                    currentTile[0] -= 1;
-                    canMove = false;
+                    Data.currentTile[0] -= 1;
+                    Data.canMove = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Right))
                 {
-                    currentTile[0] += 1;
-                    canMove = false;
+                    Data.currentTile[0] += 1;
+                    Data.canMove = false;
                 }
             }
             if (moveKeyState.IsKeyUp(Keys.Down) && moveKeyState.IsKeyUp(Keys.Up) && moveKeyState.IsKeyUp(Keys.Left) && moveKeyState.IsKeyUp(Keys.Right))
             {
-                canMove = true;
+                Data.canMove = true;
             }
             // placing an object
             KeyboardState placeKeyState = Keyboard.GetState();
-            if (canPlace)
+            if (Data.canPlace)
             {
                 if (placeKeyState.IsKeyDown(Keys.S))
                 {
-                    save();
-                    canPlace = false;
+                    File.Save();
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.L))
                 {
-                    load();
-                    canPlace = false;
+                    File.Load();
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.C))
                 {
-                    clearWorld();
-                    canPlace = false;
+                    World.Clear();
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.D1))
                 {
-                    writeTileCurrent(tileList[0]);
-                    canPlace = false;
+                    World.WriteCurrent(Data.tileList[0]);
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.D2))
                 {
-                    writeTileCurrent(tileList[1]);
-                    canPlace = false;
+                    World.WriteCurrent(Data.tileList[1]);
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.D3))
                 {
-                    writeTileCurrent(tileList[2]);
-                    canPlace = false;
+                    World.WriteCurrent(Data.tileList[2]);
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.D4))
                 {
-                    writeTileCurrent(tileList[3]);
-                    canPlace = false;
+                    World.WriteCurrent(Data.tileList[3]);
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.D5))
                 {
-                    writeTileCurrent(tileList[4]);
-                    canPlace = false;
+                    World.WriteCurrent(Data.tileList[4]);
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.D6))
                 {
-                    writeTileCurrent(tileList[5]);
-                    canPlace = false;
+                    World.WriteCurrent(Data.tileList[5]);
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.D7))
                 {
-                    writeTileCurrent(tileList[6]);
-                    canPlace = false;
+                    World.WriteCurrent(Data.tileList[6]);
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.D8))
                 {
-                    writeTileCurrent(tileList[7]);
-                    canPlace = false;
+                    World.WriteCurrent(Data.tileList[7]);
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.D9))
                 {
-                    writeTileCurrent(tileList[8]);
-                    canPlace = false;
+                    World.WriteCurrent(Data.tileList[8]);
+                    Data.canPlace = false;
                 }
                 if (placeKeyState.IsKeyDown(Keys.D0))
                 {
-                    writeTileCurrent(tileList[9]);
-                    canPlace = false;
+                    World.WriteCurrent(Data.tileList[9]);
+                    Data.canPlace = false;
                 }
             }
             if (placeKeyState.IsKeyUp(Keys.S) && placeKeyState.IsKeyUp(Keys.L) && placeKeyState.IsKeyUp(Keys.C) && placeKeyState.IsKeyUp(Keys.D1) && placeKeyState.IsKeyUp(Keys.D2) && placeKeyState.IsKeyUp(Keys.D3) && placeKeyState.IsKeyUp(Keys.D4) && placeKeyState.IsKeyUp(Keys.D5) && placeKeyState.IsKeyUp(Keys.D6) && placeKeyState.IsKeyUp(Keys.D7) && placeKeyState.IsKeyUp(Keys.D8) && placeKeyState.IsKeyUp(Keys.D9) && placeKeyState.IsKeyUp(Keys.D0))
             {
-                canPlace = true;
+                Data.canPlace = true;
             }
             base.Update(gameTime);
         }
@@ -205,49 +194,66 @@ namespace OpenBAHN
             // TODO: Add your drawing code here
             spriteBatch.Begin();
             // draw tiles
-            for (int y = 0; y < 24; y++)
+            for (int y = Data.cameraPosition[1]; y < Data.cameraPosition[1] + 24; y++)
             {
-                for (int x = 0; x < 20; x++)
+                for (int x = Data.cameraPosition[0]; x < Data.cameraPosition[0] + 20; x++)
                 {
-                    if (getTileID(x, y) != 0)
+                    if (World.GetID(x, y) != 0)
                     {
-                        spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + getTileID(x, y)), new Rectangle(x * 40, (y * 20) - 20, 40, 60), Color.White);
+                        spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + World.GetID(x, y)), new Rectangle(x * 40, (y * 20) - 20, 40, 60), Color.White);
                     }
                 }
             }
             // mark selected tile
-            spriteBatch.Draw(select, new Rectangle(currentTile[0] * 40, currentTile[1] * 20, select.Width, select.Height), Color.White);
+            spriteBatch.Draw(select, new Rectangle((Data.cameraPosition[0] + Data.currentTile[0]) * 40, (Data.cameraPosition[1] + Data.currentTile[1]) * 20, select.Width, select.Height), Color.White);
             spriteBatch.End();
             base.Draw(gameTime);
         }
-        // methods
-        void save()
+    }
+    public class Data
+    {
+        public static List<List<int>> worldTiles = new List<List<int>>();
+        // element 0: X
+        // element 1: Y
+        // element 2: ID
+        // further elements: parameters (vary by tile type)
+        public static int[] tileList = { 0, 1, 2, 3, 4, 8, 9, 10, 11, 12 };
+        public static int[] currentTile = { 0, 0 };
+        public static int[] cameraPosition = { 0, 0 };
+        public static Int64 tickStart = Environment.TickCount;
+        public static bool canMove = true;
+        public static bool canPlace = true;
+        public static const string currentVersion = "Alpha0.0.1"; // remember to change every release!
+    }
+    public class File
+    {
+        public static void Save()
         {
             Int64 tick = Environment.TickCount;
-            writeLog("Saving started");
+            Log.writeLog("Saving started");
             string composition = "";
-            composition += currentVersion + "\n#\n"; // version
-            foreach (List<int> composition2 in worldTiles) // tracks
+            composition += Data.currentVersion + "\n#\n"; // version
+            foreach (List<int> composition2 in Data.worldTiles) // tracks
             {
                 foreach (int parameter in composition2)
                 {
                     composition += Convert.ToString(parameter) + ",";
-                    writeLog("Parameter saved: " + parameter);
+                    Log.writeLog("Parameter saved: " + parameter);
                 }
                 composition += "\n";
             }
             System.IO.File.WriteAllText(@"C:\Users\Public\Test\WriteLines.txt", composition);
             tick = (tick - Environment.TickCount) * -1;
-            writeLog("World saved successfully in " + tick + " milliseconds.");
+            Log.writeLog("World saved successfully in " + tick + " milliseconds.");
         }
 
-        void load()
+        public static void Load()
         {
             Int64 tick = Environment.TickCount;
-            writeLog("Loading started");
-            clearWorld(); // first, we clear current world
+            Log.writeLog("Loading started");
+            World.Clear(); // first, we clear current world
             string[] composition = System.IO.File.ReadAllLines(@"C:\Users\Public\Test\WriteLines.txt"); // open a file and store every line in one item in array
-            writeLog("Read from file successful");
+            Log.writeLog("Read from file successful");
             int loadingStage = 0; // 0 - file format version, 1 - tracks, 2 - track scripts, 3 - trains, 4 - train scripts
             bool abort = false; // if true there is error and loading is aborted
             foreach (string line in composition) // for each item in array
@@ -255,30 +261,30 @@ namespace OpenBAHN
                 if (line == "#") // a hash ends a segment of loaded file
                 {
                     loadingStage++;
-                    writeLog("Ended parsing a segment of data loading. New stage: " + loadingStage);
+                    Log.writeLog("Ended parsing a segment of data loading. New stage: " + loadingStage);
                 }
                 else // we do this because when it's a new segment it parses this hash so it can do unexpected behavior
                 {
                     if (loadingStage == 0)
                     {
-                        writeLog("File version: " + line);
-                        if (line == currentVersion)
+                        Log.writeLog("File version: " + line);
+                        if (line == Data.currentVersion)
                         {
-                            writeLog("Versions match!");
+                            Log.writeLog("Versions match!");
                         }
                         else
                         {
-                            writeLog("Versions does not match! Loading version list to check that this save is not saved in newer version...");
+                            Log.writeLog("Versions does not match! Loading version list to check that this save is not saved in newer version...");
                             string[] versions = System.IO.File.ReadAllLines(@"C:\Users\Public\Test\versions.txt"); // it works as above
                             foreach (string version in versions)
                             {
                                 if (line == version)
                                 {
-                                    writeLog("This file was saved in older version. Let's check data systems...");
-                                    writeLog("Data systems are the same in both versions. Continue loading.");
+                                    Log.writeLog("This file was saved in older version. Let's check data systems...");
+                                    Log.writeLog("Data systems are the same in both versions. Continue loading.");
                                     break;
                                 }
-                                writeLog("It seems that this file was saved in newer version. File not loaded due to data corruption risk.");
+                                Log.writeLog("It seems that this file was saved in newer version. File not loaded due to data corruption risk.");
                                 abort = true;
                             }
                         }
@@ -298,11 +304,11 @@ namespace OpenBAHN
                                 try
                                 {
                                     parameters.Add(Convert.ToInt32(composedNumber)); // adding
-                                    writeLog("Parsed a parameter: " + composedNumber);
+                                    Log.writeLog("Parsed a parameter: " + composedNumber);
                                 }
                                 catch (FormatException)
                                 {
-                                    writeLog("Can not convert this parameter: " + composedNumber + ", skipping...");
+                                    Log.writeLog("Can not convert this parameter: " + composedNumber + ", skipping...");
                                 }
                                 finally
                                 {
@@ -310,7 +316,7 @@ namespace OpenBAHN
                                 }
                             }
                         }
-                        writeLog("Started additional parameters parsing.");
+                        Log.writeLog("Started additional parameters parsing.");
                         if (parameters.Count >= 3) // a X, Y and ID values
                         {
                             int[] composedParameters = new int[parameters.Count - 3]; // we create a new array for the rest - parameters
@@ -318,12 +324,12 @@ namespace OpenBAHN
                             {
                                 composedParameters[i] = parameters[i + 3];
                             }
-                            writeLog("Parameters parsed: " + composedParameters.Length);
-                            writeTile(parameters[0], parameters[1], parameters[2], composedParameters); // after that, we are ready to add a new tile to the world...
+                            Log.writeLog("Parameters parsed: " + composedParameters.Length);
+                            World.Write(parameters[0], parameters[1], parameters[2], composedParameters); // after that, we are ready to add a new tile to the world...
                         }
                         else
                         {
-                            writeLog("Error, not enough parameters. To avoid exception, a tile was not added :(");
+                            Log.writeLog("Error, not enough parameters. To avoid exception, a tile was not added :(");
                         }
                         parameters.Clear(); // and clear the list for next tile
                     }
@@ -336,34 +342,44 @@ namespace OpenBAHN
             tick = (tick - Environment.TickCount) * -1;
             if (abort)
             {
-                writeLog("World was not loaded successfully. Time wasted: " + tick + "ms.");
+                Log.writeLog("World was not loaded successfully. Time wasted: " + tick + "ms.");
             }
             else
             {
-                writeLog("World loaded successfully in " + tick + " milliseconds.");
+                Log.writeLog("World loaded successfully in " + tick + " milliseconds.");
             }
         }
-
-        void writeLog(string text)
+    }
+    public class Movement
+    {
+        public static void MoveCursor(int direction) // 0: up 1: left 2: down 3: right
+        {
+        }
+    }
+    public class Log
+    {
+        public static void writeLog(string text)
         {
             using (System.IO.StreamWriter log = new System.IO.StreamWriter(@"C:\Users\Public\Test\log.txt", true))
             {
-                Int64 tick = Environment.TickCount - tickStart;
+                Int64 tick = Environment.TickCount - Data.tickStart;
                 log.WriteLine("Tick " + tick + ": " + text);
             }
         }
-
-        void clearWorld()
+    }
+    public class World
+    {
+        public static void Clear()
         {
-            writeLog("World clearing started");
-            worldTiles.Clear();
-            writeLog("World cleared");
+            Log.writeLog("World clearing started");
+            Data.worldTiles.Clear();
+            Log.writeLog("World cleared");
         }
 
-        void writeTile(int x, int y, int id, int[] parameters = null)
+        public static void Write(int x, int y, int id, int[] parameters = null)
         {
             // deleting a tile first to don't have 2 elements in one tile
-            deleteTile(x, y);
+            Delete(x, y);
             // when ID is 0 then we only delete a tile so we skip code below
             if (id != 0)
             {
@@ -379,40 +395,40 @@ namespace OpenBAHN
                     composition.Add(parameter);
                 }
                 // adding to a global list
-                worldTiles.Add(composition);
+                Data.worldTiles.Add(composition);
             }
-            writeLog("Tile placed in X: " + x + " Y: " + y + " ID: " + id + " Parameters: " + intArrayToString(parameters));
+            Log.writeLog("Tile placed in X: " + x + " Y: " + y + " ID: " + id + " Parameters: " + Conversion.intArrayToString(parameters));
         }
 
-        void writeTileCurrent(int id, int[] parameters = null)
+        public static void WriteCurrent(int id, int[] parameters = null)
         {
-            writeTile(currentTile[0], currentTile[1], id, parameters);
+            Write(Data.currentTile[0], Data.currentTile[1], id, parameters);
         }
 
-        void deleteTile(int x, int y)
+        public static void Delete(int x, int y)
         {
             int setx = x;
             int sety = y;
-            if (getTileItem(setx, sety) != -1)
+            if (GetListItem(setx, sety) != -1)
             {
-                worldTiles.RemoveAt(getTileItem(setx, sety));
+                Data.worldTiles.RemoveAt(GetListItem(setx, sety));
             }
         }
 
-        void deleteTileCurrent()
+        public static void DeleteCurrent()
         {
-            deleteTile(currentTile[0], currentTile[1]);
+            Delete(Data.currentTile[0], Data.currentTile[1]);
         }
 
-        int getTileID(int x, int y)
+        public static int GetID(int x, int y)
         {
-            return getTileParameter(x, y, 0);
+            return GetParameter(x, y, 0);
         }
 
-        int getTileParameter(int x, int y, int parameter)
+        public static int GetParameter(int x, int y, int parameter)
         {
             int returnValue = 0; // in case when there isn't any tile in that position
-            foreach (List<int> composition in worldTiles)
+            foreach (List<int> composition in Data.worldTiles)
             {
                 if (composition[0] == x && composition[1] == y)
                 {
@@ -422,11 +438,11 @@ namespace OpenBAHN
             return returnValue;
         }
 
-        int getTileParametersQuantity(int x, int y)
+        public static int GetParametersQuantity(int x, int y)
         {
-            if (getTileItem(x, y) != -1)
+            if (GetListItem(x, y) != -1)
             {
-                return worldTiles[getTileItem(x, y)].Count - 3;
+                return Data.worldTiles[GetListItem(x, y)].Count - 3;
             }
             else
             {
@@ -434,10 +450,10 @@ namespace OpenBAHN
             }
         }
 
-        int getTileItem(int x, int y)
+        public static int GetListItem(int x, int y)
         {
             int returnValue = 0;
-            foreach (List<int> composition in worldTiles)
+            foreach (List<int> composition in Data.worldTiles)
             {
                 if (composition[0] == x && composition[1] == y)
                 {
@@ -447,8 +463,10 @@ namespace OpenBAHN
             }
             return -1;
         }
-
-        string intArrayToString(int[] parameters)
+    }
+    public class Conversion
+    {
+        public static string intArrayToString(int[] parameters)
         {
             parameters = parameters ?? new int[0]; // to not cause a crash
             string returnValue = "";
