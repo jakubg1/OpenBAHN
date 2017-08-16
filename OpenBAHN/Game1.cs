@@ -45,6 +45,8 @@ namespace OpenBAHN
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            // mouse visiblity
+            IsMouseVisible = true;
             // delete old log
             System.IO.File.WriteAllText(@"C:\Users\Public\Test\log.txt", "");
             base.Initialize();
@@ -115,57 +117,77 @@ namespace OpenBAHN
             }
             // placing an object
             KeyboardState placeKeyState = Keyboard.GetState();
-            if (placeKeyState.IsKeyDown(Keys.S))
+            if (canPlace)
             {
-                save();
+                if (placeKeyState.IsKeyDown(Keys.S))
+                {
+                    save();
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.L))
+                {
+                    load();
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.C))
+                {
+                    clearWorld();
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.D1))
+                {
+                    writeTileCurrent(tileList[0]);
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.D2))
+                {
+                    writeTileCurrent(tileList[1]);
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.D3))
+                {
+                    writeTileCurrent(tileList[2]);
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.D4))
+                {
+                    writeTileCurrent(tileList[3]);
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.D5))
+                {
+                    writeTileCurrent(tileList[4]);
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.D6))
+                {
+                    writeTileCurrent(tileList[5]);
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.D7))
+                {
+                    writeTileCurrent(tileList[6]);
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.D8))
+                {
+                    writeTileCurrent(tileList[7]);
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.D9))
+                {
+                    writeTileCurrent(tileList[8]);
+                    canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.D0))
+                {
+                    writeTileCurrent(tileList[9]);
+                    canPlace = false;
+                }
             }
-            if (placeKeyState.IsKeyDown(Keys.L))
+            if (placeKeyState.IsKeyUp(Keys.S) && placeKeyState.IsKeyUp(Keys.L) && placeKeyState.IsKeyUp(Keys.C) && placeKeyState.IsKeyUp(Keys.D1) && placeKeyState.IsKeyUp(Keys.D2) && placeKeyState.IsKeyUp(Keys.D3) && placeKeyState.IsKeyUp(Keys.D4) && placeKeyState.IsKeyUp(Keys.D5) && placeKeyState.IsKeyUp(Keys.D6) && placeKeyState.IsKeyUp(Keys.D7) && placeKeyState.IsKeyUp(Keys.D8) && placeKeyState.IsKeyUp(Keys.D9) && placeKeyState.IsKeyUp(Keys.D0))
             {
-                load();
-            }
-            if (placeKeyState.IsKeyDown(Keys.C) && worldTiles.Count > 0)
-            {
-                clearWorld();
-            }
-            if (placeKeyState.IsKeyDown(Keys.D1))
-            {
-                writeTileCurrent(tileList[0]);
-            }
-            if (placeKeyState.IsKeyDown(Keys.D2))
-            {
-                writeTileCurrent(tileList[1]);
-            }
-            if (placeKeyState.IsKeyDown(Keys.D3))
-            {
-                writeTileCurrent(tileList[2]);
-            }
-            if (placeKeyState.IsKeyDown(Keys.D4))
-            {
-                writeTileCurrent(tileList[3]);
-            }
-            if (placeKeyState.IsKeyDown(Keys.D5))
-            {
-                writeTileCurrent(tileList[4]);
-            }
-            if (placeKeyState.IsKeyDown(Keys.D6))
-            {
-                writeTileCurrent(tileList[5]);
-            }
-            if (placeKeyState.IsKeyDown(Keys.D7))
-            {
-                writeTileCurrent(tileList[6]);
-            }
-            if (placeKeyState.IsKeyDown(Keys.D8))
-            {
-                writeTileCurrent(tileList[7]);
-            }
-            if (placeKeyState.IsKeyDown(Keys.D9))
-            {
-                writeTileCurrent(tileList[8]);
-            }
-            if (placeKeyState.IsKeyDown(Keys.D0))
-            {
-                writeTileCurrent(tileList[9]);
+                canPlace = true;
             }
             base.Update(gameTime);
         }
@@ -207,13 +229,13 @@ namespace OpenBAHN
                 foreach (int parameter in composition2)
                 {
                     composition += Convert.ToString(parameter) + ",";
-                    writeLog("Parameter saved: " + Convert.ToString(parameter));
+                    writeLog("Parameter saved: " + parameter);
                 }
                 composition += "\n";
             }
             System.IO.File.WriteAllText(@"C:\Users\Public\Test\WriteLines.txt", composition);
             tick = (tick - Environment.TickCount) * -1;
-            writeLog("World saved successfully in " + Convert.ToString(tick) + " milliseconds.");
+            writeLog("World saved successfully in " + tick + " milliseconds.");
         }
 
         void load()
@@ -235,23 +257,40 @@ namespace OpenBAHN
                     }
                     if (letter == ',') // after comma we go to new parameter, so we add composed number to the list of parameters; it's important to place a comma after last parameter
                     {
-                        parameters.Add(Convert.ToInt32(composition3)); // adding
-                        writeLog("Parsed a parameter: " + Convert.ToString(composition3));
-                        composition3 = ""; // don't forget to clear composed number; now we are ready to compose a new parameter
+                        try
+                        {
+                            parameters.Add(Convert.ToInt32(composition3)); // adding
+                            writeLog("Parsed a parameter: " + composition3);
+                        }
+                        catch (FormatException)
+                        {
+                            writeLog("Can not convert this parameter: " + composition3 + ", skipping...");
+                        }
+                        finally
+                        {
+                            composition3 = ""; // don't forget to clear composed number; now we are ready to compose a new parameter
+                        }
                     }
                 }
                 writeLog("Started additional parameters parsing.");
-                int[] composition4 = new int[parameters.Count - 3]; // we create a new array for the rest - parameters
-                for (int i = 0; i < parameters.Count - 3; i++)
+                if (parameters.Count >= 3)
                 {
-                    composition4[i] = parameters[i + 3];
+                    int[] composition4 = new int[parameters.Count - 3]; // we create a new array for the rest - parameters
+                    for (int i = 0; i < parameters.Count - 3; i++)
+                    {
+                        composition4[i] = parameters[i + 3];
+                    }
+                    writeLog("Parameters parsed: " + composition4.Length);
+                    writeTile(parameters[0], parameters[1], parameters[2], composition4); // after that, we are ready to add a new tile to the world...
                 }
-                writeLog("Parameters parsed: " + Convert.ToString(composition4.Length));
-                writeTile(parameters[0], parameters[1], parameters[2], composition4); // after that, we are ready to add a new tile to the world...
+                else
+                {
+                    writeLog("Error, not enough parameters. To avoid exception, a tile was not added :(");
+                }
                 parameters.Clear(); // and clear the list for next tile
             }
             tick = (tick - Environment.TickCount) * -1;
-            writeLog("World loaded successfully in " + Convert.ToString(tick) + " milliseconds.");
+            writeLog("World loaded successfully in " + tick + " milliseconds.");
         }
 
         void writeLog(string text)
@@ -259,7 +298,7 @@ namespace OpenBAHN
             using (System.IO.StreamWriter log = new System.IO.StreamWriter(@"C:\Users\Public\Test\log.txt", true))
             {
                 Int64 tick = Environment.TickCount - tickStart;
-                log.WriteLine("Tick " + Convert.ToString(tick) + ": " + text);
+                log.WriteLine("Tick " + tick + ": " + text);
             }
         }
 
@@ -291,7 +330,7 @@ namespace OpenBAHN
                 // adding to a global list
                 worldTiles.Add(composition);
             }
-            writeLog("Tile placed in X: " + Convert.ToString(x) + " Y: " + Convert.ToString(y) + ". ID: " + Convert.ToString(id) + " Parameters: " + intArrayToString(parameters));
+            writeLog("Tile placed in X: " + x + " Y: " + y + " ID: " + id + " Parameters: " + intArrayToString(parameters));
         }
 
         void writeTileCurrent(int id, int[] parameters = null)
@@ -368,7 +407,7 @@ namespace OpenBAHN
                 foreach (int parameter in parameters)
                 {
                     iterationsLeft--;
-                    returnValue += parameter;
+                    returnValue += parameter; // note that conversion go automatically
                     if (iterationsLeft > 0)
                     {
                         returnValue += ", ";
