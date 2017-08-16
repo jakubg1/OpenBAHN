@@ -83,22 +83,26 @@ namespace OpenBAHN
             {
                 if (moveKeyState.IsKeyDown(Keys.Down))
                 {
-                    Data.currentTile[1] += 1;
+                    Movement.MoveCursor(2);
+                    Movement.UpdateCamera();
                     Data.canMove = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Up))
                 {
-                    Data.currentTile[1] -= 1;
+                    Movement.MoveCursor(0);
+                    Movement.UpdateCamera();
                     Data.canMove = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Left))
                 {
-                    Data.currentTile[0] -= 1;
+                    Movement.MoveCursor(1);
+                    Movement.UpdateCamera();
                     Data.canMove = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Right))
                 {
-                    Data.currentTile[0] += 1;
+                    Movement.MoveCursor(3);
+                    Movement.UpdateCamera();
                     Data.canMove = false;
                 }
             }
@@ -194,18 +198,18 @@ namespace OpenBAHN
             // TODO: Add your drawing code here
             spriteBatch.Begin();
             // draw tiles
-            for (int y = Data.cameraPosition[1]; y < Data.cameraPosition[1] + 24; y++)
+            for (int y = Data.cameraPosition[1] - 1; y < (Data.cameraPosition[1] + 24) + 1; y++)
             {
                 for (int x = Data.cameraPosition[0]; x < Data.cameraPosition[0] + 20; x++)
                 {
                     if (World.GetID(x, y) != 0)
                     {
-                        spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + World.GetID(x, y)), new Rectangle(x * 40, (y * 20) - 20, 40, 60), Color.White);
+                        spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + World.GetID(x, y)), new Rectangle((x - Data.cameraPosition[0]) * 40, ((y - Data.cameraPosition[1]) * 20) - 20, 40, 60), Color.White);
                     }
                 }
             }
             // mark selected tile
-            spriteBatch.Draw(select, new Rectangle((Data.cameraPosition[0] + Data.currentTile[0]) * 40, (Data.cameraPosition[1] + Data.currentTile[1]) * 20, select.Width, select.Height), Color.White);
+            spriteBatch.Draw(select, new Rectangle((Data.currentTile[0] - Data.cameraPosition[0]) * 40, (Data.currentTile[1] - Data.cameraPosition[1]) * 20, select.Width, select.Height), Color.White);
             spriteBatch.End();
             base.Draw(gameTime);
         }
@@ -354,6 +358,62 @@ namespace OpenBAHN
     {
         public static void MoveCursor(int direction) // 0: up 1: left 2: down 3: right
         {
+            switch (direction)
+            {
+                case 0:
+                    Data.currentTile[1]--;
+                    break;
+                case 1:
+                    Data.currentTile[0]--;
+                    break;
+                case 2:
+                    Data.currentTile[1]++;
+                    break;
+                case 3:
+                    Data.currentTile[0]++;
+                    break;
+            }
+        }
+        public static void UpdateCamera()
+        {
+            int xMin = Data.cameraPosition[0];
+            int yMin = Data.cameraPosition[1];
+            int xMax = Data.cameraPosition[0] + 19;
+            int yMax = Data.cameraPosition[1] + 23;
+            if (Data.currentTile[1] < yMin) // up
+            {
+                MoveCamera(0);
+            }
+            if (Data.currentTile[0] < xMin) // left
+            {
+                MoveCamera(1);
+            }
+            if (Data.currentTile[1] > yMax) // down
+            {
+                MoveCamera(2);
+            }
+            if (Data.currentTile[0] > xMax) // right
+            {
+                MoveCamera(3);
+            }
+        }
+        static void MoveCamera(int direction) // 0: up 1: left 2: down 3: right
+        {
+            switch (direction)
+            {
+                case 0:
+                    Data.cameraPosition[1]--;
+                    break;
+                case 1:
+                    Data.cameraPosition[0]--;
+                    break;
+                case 2:
+                    Data.cameraPosition[1]++;
+                    break;
+                case 3:
+                    Data.cameraPosition[0]++;
+                    break;
+            }
         }
     }
     public class Log
