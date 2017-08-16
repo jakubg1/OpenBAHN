@@ -26,7 +26,7 @@ namespace OpenBAHN
         // further elements: parameters (vary by tile type)
         int[] tileList = { 0, 1, 2, 3, 4, 8, 9, 10, 11, 12 };
         int[] currentTile = { 0, 0 };
-        const Int64 tickStart = Environment.TickCount;
+        Int64 tickStart = Environment.TickCount;
         bool canMove = true;
         bool canPlace = true;
         const string currentVersion = "Alpha0.0.1"; // remember to change every release!
