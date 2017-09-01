@@ -80,7 +80,10 @@ namespace OpenBAHN
         {
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+            {
+                Log.writeLog("Program closed without error.");
                 this.Exit();
+            }
 
             // TODO: Add your update logic here
             // moving the cursor
@@ -167,6 +170,17 @@ namespace OpenBAHN
                 {
                     World.Clear();
                     Data.canPlace = false;
+                }
+                if (placeKeyState.IsKeyDown(Keys.Delete))
+                {
+                    if (!Data.isSelecting)
+                    {
+                        World.DeleteCurrent();
+                    }
+                    if (Data.isSelecting)
+                    {
+                        World.DeleteCurrentArea();
+                    }
                 }
                 if (placeKeyState.IsKeyDown(Keys.D1))
                 {
@@ -557,9 +571,39 @@ namespace OpenBAHN
             }
         }
 
+        public static void DeleteArea(int x1, int y1, int x2, int y2)
+        {
+            // swap values if they are in wrong order
+            if (x1 > x2)
+            {
+                int temp = x2;
+                x2 = x1;
+                x1 = temp;
+            }
+            if (y1 > y2)
+            {
+                int temp = y2;
+                y2 = y1;
+                y1 = temp;
+            }
+            // delete every tile in area
+            for (int y = 0; y <= y2 - y1; y++)
+            {
+                for (int x = 0; x <= x2 - x1; x++)
+                {
+                    Delete(x1 + x, y1 + y);
+                }
+            }
+        }
+
         public static void DeleteCurrent()
         {
             Delete(Data.currentTile[0], Data.currentTile[1]);
+        }
+
+        public static void DeleteCurrentArea()
+        {
+            DeleteArea(Data.tileSel1[0], Data.tileSel1[1], Data.tileSel2[0], Data.tileSel2[1]);
         }
 
         public static int GetID(int x, int y)
