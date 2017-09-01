@@ -18,6 +18,7 @@ namespace OpenBAHN
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        Texture2D none;
         Texture2D select;
 
         public DrawAndUpdate()
@@ -53,6 +54,11 @@ namespace OpenBAHN
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            // below very important function that allows to draw without texture
+            none = new Texture2D(GraphicsDevice, 1, 1);
+            none.SetData<Color>(new Color[] {Color.White});
+
+
             select = Content.Load<Texture2D>(@"tile/marker");
         }
 
@@ -79,37 +85,66 @@ namespace OpenBAHN
             // TODO: Add your update logic here
             // moving the cursor
             KeyboardState moveKeyState = Keyboard.GetState();
-            if (Data.canMove || moveKeyState.IsKeyDown(Keys.LeftShift)) //moving without Shift is used for precise positioning, with Shift is used for fast moving around world
+            if (Data.canMoveKeyBoard || moveKeyState.IsKeyDown(Keys.LeftShift)) //moving without Shift is used for precise positioning, with Shift is used for fast moving around world
             {
                 if (moveKeyState.IsKeyDown(Keys.Down))
                 {
                     Movement.MoveCursor(2);
                     Movement.UpdateCamera();
-                    Data.canMove = false;
+                    Data.canMoveKeyBoard = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Up))
                 {
                     Movement.MoveCursor(0);
                     Movement.UpdateCamera();
-                    Data.canMove = false;
+                    Data.canMoveKeyBoard = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Left))
                 {
                     Movement.MoveCursor(1);
                     Movement.UpdateCamera();
-                    Data.canMove = false;
+                    Data.canMoveKeyBoard = false;
                 }
                 if (moveKeyState.IsKeyDown(Keys.Right))
                 {
                     Movement.MoveCursor(3);
                     Movement.UpdateCamera();
-                    Data.canMove = false;
+                    Data.canMoveKeyBoard = false;
                 }
             }
             if (moveKeyState.IsKeyUp(Keys.Down) && moveKeyState.IsKeyUp(Keys.Up) && moveKeyState.IsKeyUp(Keys.Left) && moveKeyState.IsKeyUp(Keys.Right))
             {
-                Data.canMove = true;
+                Data.canMoveKeyBoard = true;
             }
+            // by mouse
+            MouseState moveMouseState = Mouse.GetState();
+            if (moveMouseState.LeftButton == ButtonState.Pressed)
+            {
+                Movement.SetCursorPosition(Movement.GetXPosFromMouse(moveMouseState.X), Movement.GetYPosFromMouse(moveMouseState.Y));
+                if (Environment.TickCount % 5 == 0)
+                {
+                    Movement.UpdateCamera();
+                }
+                if (Data.canMoveMouse)
+                {
+                    // If we write "Data.tileSel1 = Data.currentTile;" system will set "Data.tileSel1" as reference, not value!
+                    Data.tileSel1[0] = Data.currentTile[0];
+                    Data.tileSel1[1] = Data.currentTile[1];
+                    Data.isSelecting = false;
+                    Data.canMoveMouse = false;
+                }
+            }
+            if (moveMouseState.LeftButton == ButtonState.Released)
+            {
+                Data.canMoveMouse = true;
+            }
+            // area selecting
+            if (moveMouseState.LeftButton == ButtonState.Pressed && Data.currentTile != Data.tileSel1)
+            {
+                Data.tileSel2 = Data.currentTile;
+                Data.isSelecting = true;
+            }
+
             // placing an object
             KeyboardState placeKeyState = Keyboard.GetState();
             if (Data.canPlace)
@@ -210,6 +245,22 @@ namespace OpenBAHN
             }
             // mark selected tile
             spriteBatch.Draw(select, new Rectangle((Data.currentTile[0] - Data.cameraPosition[0]) * 40, (Data.currentTile[1] - Data.cameraPosition[1]) * 20, select.Width, select.Height), Color.White);
+            // 3 lines below: for debug purposes; DO NOT DELETE IT!
+            //spriteBatch.Draw(select, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, select.Width, select.Height), Color.Lime);
+            //spriteBatch.Draw(select, new Rectangle((Data.tileSel2[0] - Data.cameraPosition[0]) * 40, (Data.tileSel2[1] - Data.cameraPosition[1]) * 20, select.Width, select.Height), Color.Red);
+            //spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40, (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20), Color.Magenta);
+            // mark selected area
+            if (Data.isSelecting)
+            {
+                // up
+                spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40, 2), Color.Magenta);
+                // left
+                spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, 2, (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20), Color.Magenta);
+                // bottom
+                spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (((Data.tileSel1[1] - Data.cameraPosition[1]) + (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1)) * 20) - 1, ((Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40) + 1, 2), Color.Magenta);
+                // right
+                spriteBatch.Draw(none, new Rectangle((((Data.tileSel1[0] - Data.cameraPosition[0]) + (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1)) * 40) - 1, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, 2, ((Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20) + 1), Color.Magenta);
+            }
             spriteBatch.End();
             base.Draw(gameTime);
         }
@@ -223,11 +274,15 @@ namespace OpenBAHN
         // further elements: parameters (vary by tile type)
         public static int[] tileList = { 0, 1, 2, 3, 4, 8, 9, 10, 11, 12 };
         public static int[] currentTile = { 0, 0 };
+        public static int[] tileSel1 = { 0, 0 };
+        public static int[] tileSel2 = { 0, 0 };
+        public static bool isSelecting = false;
         public static int[] cameraPosition = { 0, 0 };
-        public static Int64 tickStart = Environment.TickCount;
-        public static bool canMove = true;
+        public static bool canMoveKeyBoard = true;
+        public static bool canMoveMouse = true;
         public static bool canPlace = true;
-        public const string currentVersion = "Alpha0.0.1"; // remember to change every release!
+        public static Int64 tickStart = Environment.TickCount;
+        public const string currentVersion = "Alpha0.0.2"; // remember to change every release!
     }
     public class File
     {
@@ -285,6 +340,7 @@ namespace OpenBAHN
                                 if (line == version)
                                 {
                                     Log.writeLog("This file was saved in older version. Let's check data systems...");
+                                    // Code for checking data systems will be written in far future.
                                     Log.writeLog("Data systems are the same in both versions. Continue loading.");
                                     break;
                                 }
@@ -373,6 +429,28 @@ namespace OpenBAHN
                     Data.currentTile[0]++;
                     break;
             }
+        }
+        public static int[] GetPosFromMouse(int x, int y)
+        {
+            int[] returnValue = new int[2];
+            int returnX = Convert.ToInt32(Math.Floor(Convert.ToDouble(x) / 40)) + Data.cameraPosition[0];
+            int returnY = Convert.ToInt32(Math.Floor(Convert.ToDouble(y) / 20)) + Data.cameraPosition[1];
+            returnValue[0] = returnX;
+            returnValue[1] = returnY;
+            return returnValue;
+        }
+        public static int GetXPosFromMouse(int x)
+        {
+            return Convert.ToInt32(Math.Floor(Convert.ToDouble(x) / 40)) + Data.cameraPosition[0];
+        }
+        public static int GetYPosFromMouse(int y)
+        {
+            return Convert.ToInt32(Math.Floor(Convert.ToDouble(y) / 20)) + Data.cameraPosition[1];
+        }
+        public static void SetCursorPosition(int x, int y)
+        {
+            Data.currentTile[0] = x;
+            Data.currentTile[1] = y;
         }
         public static void UpdateCamera()
         {

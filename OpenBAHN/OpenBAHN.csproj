@@ -81,6 +81,7 @@
     <Content Include="GameThumbnail.png">
       <XnaPlatformSpecific>true</XnaPlatformSpecific>
     </Content>
+    <Content Include="log.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OpenBAHNContent\OpenBAHNContent.contentproj">
