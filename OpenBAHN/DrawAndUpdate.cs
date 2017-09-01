@@ -144,6 +144,10 @@ namespace OpenBAHN
                 Data.tileSel2 = Data.currentTile;
                 Data.isSelecting = true;
             }
+            if (Data.tileSel1[0] == Data.tileSel2[0] && Data.tileSel1[1] == Data.tileSel2[1])
+            {
+                Data.isSelecting = false;
+            }
 
             // placing an object
             KeyboardState placeKeyState = Keyboard.GetState();
@@ -257,9 +261,9 @@ namespace OpenBAHN
                 // left
                 spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, 2, (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20), Color.Magenta);
                 // bottom
-                spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (((Data.tileSel1[1] - Data.cameraPosition[1]) + (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1)) * 20) - 1, ((Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40) + 1, 2), Color.Magenta);
+                spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (((Data.tileSel1[1] - Data.cameraPosition[1]) + (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1)) * 20) - 2, (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40, 2), Color.Magenta);
                 // right
-                spriteBatch.Draw(none, new Rectangle((((Data.tileSel1[0] - Data.cameraPosition[0]) + (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1)) * 40) - 1, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, 2, ((Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20) + 1), Color.Magenta);
+                spriteBatch.Draw(none, new Rectangle((((Data.tileSel1[0] - Data.cameraPosition[0]) + (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1)) * 40) - 2, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, 2, (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20), Color.Magenta);
             }
             spriteBatch.End();
             base.Draw(gameTime);
