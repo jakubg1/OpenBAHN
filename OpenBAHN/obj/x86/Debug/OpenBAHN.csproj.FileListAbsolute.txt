@@ -21,3 +21,5 @@ C:\Users\beata\Desktop\OpenBAHN\OpenBAHN\OpenBAHN\bin\x86\Debug\OpenBAHN.exe
 C:\Users\beata\Desktop\OpenBAHN\OpenBAHN\OpenBAHN\bin\x86\Debug\OpenBAHN.pdb
 C:\Users\beata\Desktop\OpenBAHN\OpenBAHN\OpenBAHN\obj\x86\Debug\OpenBAHN.exe
 C:\Users\beata\Desktop\OpenBAHN\OpenBAHN\OpenBAHN\obj\x86\Debug\OpenBAHN.pdb
+C:\Users\beata\Desktop\OpenBAHN\OpenBAHN\OpenBAHN\obj\x86\Debug\OpenBAHN.test.resources
+C:\Users\beata\Desktop\OpenBAHN\OpenBAHN\OpenBAHN\obj\x86\Debug\OpenBAHN.csproj.GenerateResource.Cache

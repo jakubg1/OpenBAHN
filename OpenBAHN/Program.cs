@@ -15,6 +15,10 @@ namespace OpenBAHN
             {
                 game.Run();
             }
+            using (test test = new test())
+            {
+                //test.Run();
+            }
         }
     }
 #endif
