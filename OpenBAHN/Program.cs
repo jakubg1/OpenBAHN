@@ -11,7 +11,7 @@ namespace OpenBAHN
         /// </summary>
         static void Main(string[] args)
         {
-            using (DrawAndUpdate game = new DrawAndUpdate())
+            using (Main game = new Main())
             {
                 game.Run();
             }

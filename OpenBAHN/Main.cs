@@ -14,14 +14,14 @@ namespace OpenBAHN
     /// <summary>
     /// This is the main type for your game
     /// </summary>
-    public class DrawAndUpdate : Microsoft.Xna.Framework.Game
+    public class Main : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
         Texture2D none;
         Texture2D select;
 
-        public DrawAndUpdate()
+        public Main()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -35,13 +35,23 @@ namespace OpenBAHN
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
             // mouse visiblity
             IsMouseVisible = true;
+
             // delete old log
             System.IO.File.WriteAllText(@"C:\Users\Public\Test\log.txt", "");
             Log.writeLog("Current version: " + Data.currentVersion);
             base.Initialize();
+
+            // make rectangles
+            for (int i = 0; i < 24; i++) // x
+            {
+                for (int j = 0; j < 20; j++) // y
+                {
+                    Data.markGraphicsSquares[i, j] = new Rectangle(i * 40, j * 20, 40, 20);
+                    Data.tileGraphicsSquares[i, j] = new Rectangle(i * 40, (j - 1) * 20, 40, 60);
+                }
+            }
         }
 
         /// <summary>
@@ -182,55 +192,16 @@ namespace OpenBAHN
                         World.DeleteCurrentArea();
                     }
                 }
-                if (placeKeyState.IsKeyDown(Keys.D1))
+
+                int i = 0;
+                foreach (Keys key in Data.placeKeys)
                 {
-                    World.WriteCurrent(Data.tileList[0]);
-                    Data.canPlace = false;
-                }
-                if (placeKeyState.IsKeyDown(Keys.D2))
-                {
-                    World.WriteCurrent(Data.tileList[1]);
-                    Data.canPlace = false;
-                }
-                if (placeKeyState.IsKeyDown(Keys.D3))
-                {
-                    World.WriteCurrent(Data.tileList[2]);
-                    Data.canPlace = false;
-                }
-                if (placeKeyState.IsKeyDown(Keys.D4))
-                {
-                    World.WriteCurrent(Data.tileList[3]);
-                    Data.canPlace = false;
-                }
-                if (placeKeyState.IsKeyDown(Keys.D5))
-                {
-                    World.WriteCurrent(Data.tileList[4]);
-                    Data.canPlace = false;
-                }
-                if (placeKeyState.IsKeyDown(Keys.D6))
-                {
-                    World.WriteCurrent(Data.tileList[5]);
-                    Data.canPlace = false;
-                }
-                if (placeKeyState.IsKeyDown(Keys.D7))
-                {
-                    World.WriteCurrent(Data.tileList[6]);
-                    Data.canPlace = false;
-                }
-                if (placeKeyState.IsKeyDown(Keys.D8))
-                {
-                    World.WriteCurrent(Data.tileList[7]);
-                    Data.canPlace = false;
-                }
-                if (placeKeyState.IsKeyDown(Keys.D9))
-                {
-                    World.WriteCurrent(Data.tileList[8]);
-                    Data.canPlace = false;
-                }
-                if (placeKeyState.IsKeyDown(Keys.D0))
-                {
-                    World.WriteCurrent(Data.tileList[9]);
-                    Data.canPlace = false;
+                    if (placeKeyState.IsKeyDown(key))
+                    {
+                        World.WriteCurrent(Data.tileList[i]);
+                        Data.canPlace = false;
+                    }
+                    i++;
                 }
             }
             if (placeKeyState.IsKeyUp(Keys.S) && placeKeyState.IsKeyUp(Keys.L) && placeKeyState.IsKeyUp(Keys.C) && placeKeyState.IsKeyUp(Keys.D1) && placeKeyState.IsKeyUp(Keys.D2) && placeKeyState.IsKeyUp(Keys.D3) && placeKeyState.IsKeyUp(Keys.D4) && placeKeyState.IsKeyUp(Keys.D5) && placeKeyState.IsKeyUp(Keys.D6) && placeKeyState.IsKeyUp(Keys.D7) && placeKeyState.IsKeyUp(Keys.D8) && placeKeyState.IsKeyUp(Keys.D9) && placeKeyState.IsKeyUp(Keys.D0))
@@ -251,18 +222,24 @@ namespace OpenBAHN
             // TODO: Add your drawing code here
             spriteBatch.Begin();
             // draw tiles
-            for (int y = Data.cameraPosition[1] - 1; y < (Data.cameraPosition[1] + 24) + 1; y++)
+            for (int i = 0; i < 24; i++) // x
             {
-                for (int x = Data.cameraPosition[0]; x < Data.cameraPosition[0] + 20; x++)
+                for (int j = 0; j < 20; j++) // y
                 {
+                    int x = i + Data.cameraPosition[0];
+                    int y = j + Data.cameraPosition[1];
                     if (World.GetID(x, y) != 0)
                     {
-                        spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + World.GetID(x, y)), new Rectangle((x - Data.cameraPosition[0]) * 40, ((y - Data.cameraPosition[1]) * 20) - 20, 40, 60), Color.White);
+                        spriteBatch.Draw(Content.Load<Texture2D>(@"tile/id" + World.GetID(x, y)), Data.tileGraphicsSquares[i, j], Color.White);
                     }
                 }
             }
             // mark selected tile
-            spriteBatch.Draw(select, new Rectangle((Data.currentTile[0] - Data.cameraPosition[0]) * 40, (Data.currentTile[1] - Data.cameraPosition[1]) * 20, select.Width, select.Height), Color.White);
+            int posx = Data.currentTile[0];
+            int posy = Data.currentTile[1];
+            int relx = posx - Data.cameraPosition[0];
+            int rely = posy - Data.cameraPosition[1];
+            spriteBatch.Draw(select, Data.markGraphicsSquares[relx, rely], Color.White);
             // 3 lines below: for debug purposes; DO NOT DELETE IT!
             //spriteBatch.Draw(select, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, select.Width, select.Height), Color.Lime);
             //spriteBatch.Draw(select, new Rectangle((Data.tileSel2[0] - Data.cameraPosition[0]) * 40, (Data.tileSel2[1] - Data.cameraPosition[1]) * 20, select.Width, select.Height), Color.Red);
@@ -290,6 +267,7 @@ namespace OpenBAHN
         // element 1: Y
         // element 2: ID
         // further elements: parameters (vary by tile type)
+        public static Keys[] placeKeys = new Keys[] { Keys.D1, Keys.D2, Keys.D3, Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9, Keys.D0 };
         public static int[] tileList = { 0, 1, 2, 3, 4, 8, 9, 10, 11, 12 };
         public static int[] currentTile = { 0, 0 };
         public static int[] tileSel1 = { 0, 0 };
@@ -301,6 +279,8 @@ namespace OpenBAHN
         public static bool canPlace = true;
         public static Int64 tickStart = Environment.TickCount;
         public const string currentVersion = "Alpha0.0.2"; // remember to change every release!
+        public static Rectangle[,] markGraphicsSquares = new Rectangle[24, 20];
+        public static Rectangle[,] tileGraphicsSquares = new Rectangle[24, 20];
     }
     public class File
     {
