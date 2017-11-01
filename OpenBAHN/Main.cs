@@ -44,9 +44,9 @@ namespace OpenBAHN
             base.Initialize();
 
             // make rectangles
-            for (int i = 0; i < 24; i++) // x
+            for (int i = 0; i < 20; i++) // x
             {
-                for (int j = 0; j < 20; j++) // y
+                for (int j = 0; j < 24; j++) // y
                 {
                     Data.markGraphicsSquares[i, j] = new Rectangle(i * 40, j * 20, 40, 20);
                     Data.tileGraphicsSquares[i, j] = new Rectangle(i * 40, (j - 1) * 20, 40, 60);
@@ -143,7 +143,7 @@ namespace OpenBAHN
                     // If we write "Data.tileSel1 = Data.currentTile;" system will set "Data.tileSel1" as reference, not value!
                     Data.tileSel1[0] = Data.currentTile[0];
                     Data.tileSel1[1] = Data.currentTile[1];
-                    Data.isSelecting = false;
+                    Data.selectingMode = false;
                     Data.canMoveMouse = false;
                 }
             }
@@ -155,11 +155,11 @@ namespace OpenBAHN
             if (moveMouseState.LeftButton == ButtonState.Pressed && Data.currentTile != Data.tileSel1)
             {
                 Data.tileSel2 = Data.currentTile;
-                Data.isSelecting = true;
+                Data.selectingMode = true;
             }
             if (Data.tileSel1[0] == Data.tileSel2[0] && Data.tileSel1[1] == Data.tileSel2[1])
             {
-                Data.isSelecting = false;
+                Data.selectingMode = false;
             }
 
             // placing an object
@@ -183,11 +183,11 @@ namespace OpenBAHN
                 }
                 if (placeKeyState.IsKeyDown(Keys.Delete))
                 {
-                    if (!Data.isSelecting)
+                    if (!Data.selectingMode)
                     {
                         World.DeleteCurrent();
                     }
-                    if (Data.isSelecting)
+                    if (Data.selectingMode)
                     {
                         World.DeleteCurrentArea();
                     }
@@ -222,9 +222,9 @@ namespace OpenBAHN
             // TODO: Add your drawing code here
             spriteBatch.Begin();
             // draw tiles
-            for (int i = 0; i < 24; i++) // x
+            for (int i = 0; i < 20; i++) // x
             {
-                for (int j = 0; j < 20; j++) // y
+                for (int j = 0; j < 24; j++) // y
                 {
                     int x = i + Data.cameraPosition[0];
                     int y = j + Data.cameraPosition[1];
@@ -235,17 +235,29 @@ namespace OpenBAHN
                 }
             }
             // mark selected tile
-            int posx = Data.currentTile[0];
-            int posy = Data.currentTile[1];
-            int relx = posx - Data.cameraPosition[0];
-            int rely = posy - Data.cameraPosition[1];
+            int posx, posy, relx, rely;
+            posx = Data.currentTile[0];
+            posy = Data.currentTile[1];
+            relx = posx - Data.cameraPosition[0];
+            rely = posy - Data.cameraPosition[1];
             spriteBatch.Draw(select, Data.markGraphicsSquares[relx, rely], Color.White);
-            // 3 lines below: for debug purposes; DO NOT DELETE IT!
-            //spriteBatch.Draw(select, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, select.Width, select.Height), Color.Lime);
-            //spriteBatch.Draw(select, new Rectangle((Data.tileSel2[0] - Data.cameraPosition[0]) * 40, (Data.tileSel2[1] - Data.cameraPosition[1]) * 20, select.Width, select.Height), Color.Red);
+
+            // 3 lines below: for debug purposes; DO NOT DELETE THEM!
+            posx = Data.tileSel1[0];
+            posy = Data.tileSel1[1];
+            relx = posx - Data.cameraPosition[0];
+            rely = posy - Data.cameraPosition[1];
+            spriteBatch.Draw(select, Data.markGraphicsSquares[relx, rely], Color.Lime);
+
+            posx = Data.tileSel2[0];
+            posy = Data.tileSel2[1];
+            relx = posx - Data.cameraPosition[0];
+            rely = posy - Data.cameraPosition[1];
+            spriteBatch.Draw(select, Data.markGraphicsSquares[relx, rely], Color.Red);
+
             //spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40, (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20), Color.Magenta);
             // mark selected area
-            if (Data.isSelecting)
+            if (Data.selectingMode)
             {
                 // up
                 spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40, 2), Color.Magenta);
@@ -272,15 +284,15 @@ namespace OpenBAHN
         public static int[] currentTile = { 0, 0 };
         public static int[] tileSel1 = { 0, 0 };
         public static int[] tileSel2 = { 0, 0 };
-        public static bool isSelecting = false;
+        public static bool selectingMode = false;
         public static int[] cameraPosition = { 0, 0 };
         public static bool canMoveKeyBoard = true;
         public static bool canMoveMouse = true;
         public static bool canPlace = true;
         public static Int64 tickStart = Environment.TickCount;
         public const string currentVersion = "Alpha0.0.2"; // remember to change every release!
-        public static Rectangle[,] markGraphicsSquares = new Rectangle[24, 20];
-        public static Rectangle[,] tileGraphicsSquares = new Rectangle[24, 20];
+        public static Rectangle[,] markGraphicsSquares = new Rectangle[20, 24];
+        public static Rectangle[,] tileGraphicsSquares = new Rectangle[20, 24];
     }
     public class File
     {
@@ -628,6 +640,23 @@ namespace OpenBAHN
                 returnValue++;
             }
             return -1;
+        }
+    }
+    public class Graphics
+    {
+        public static int[] getTilePixelPosition(int x, int y, bool lastPixelX, bool lastPixelY)
+        {
+            int returnX = x * 40;
+            int returnY = y * 20;
+            if (lastPixelX)
+            {
+                returnX += 39;
+            }
+            if (lastPixelY)
+            {
+                returnY += 19;
+            }
+            return new int[] { returnX, returnY };
         }
     }
     public class Conversion
