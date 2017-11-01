@@ -234,6 +234,7 @@ namespace OpenBAHN
                     }
                 }
             }
+
             // mark selected tile
             int posx, posy, relx, rely;
             posx = Data.currentTile[0];
@@ -243,16 +244,18 @@ namespace OpenBAHN
             spriteBatch.Draw(select, Data.markGraphicsSquares[relx, rely], Color.White);
 
             // 3 lines below: for debug purposes; DO NOT DELETE THEM!
-            posx = Data.tileSel1[0];
-            posy = Data.tileSel1[1];
-            relx = posx - Data.cameraPosition[0];
-            rely = posy - Data.cameraPosition[1];
+            int posx1, posy1, relx1, rely1;
+            posx1 = Data.tileSel1[0];
+            posy1 = Data.tileSel1[1];
+            relx1 = posx1 - Data.cameraPosition[0];
+            rely1 = posy1 - Data.cameraPosition[1];
             spriteBatch.Draw(select, Data.markGraphicsSquares[relx, rely], Color.Lime);
-
-            posx = Data.tileSel2[0];
-            posy = Data.tileSel2[1];
-            relx = posx - Data.cameraPosition[0];
-            rely = posy - Data.cameraPosition[1];
+            
+            int posx2, posy2, relx2, rely2;
+            posx2 = Data.tileSel2[0];
+            posy2 = Data.tileSel2[1];
+            relx2 = posx2 - Data.cameraPosition[0];
+            rely2 = posy2 - Data.cameraPosition[1];
             spriteBatch.Draw(select, Data.markGraphicsSquares[relx, rely], Color.Red);
 
             //spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40, (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20), Color.Magenta);
@@ -260,13 +263,25 @@ namespace OpenBAHN
             if (Data.selectingMode)
             {
                 // up
-                spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40, 2), Color.Magenta);
+                //spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40, 2), Color.Magenta);
                 // left
-                spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, 2, (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20), Color.Magenta);
+                //spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, 2, (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20), Color.Magenta);
                 // bottom
-                spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (((Data.tileSel1[1] - Data.cameraPosition[1]) + (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1)) * 20) - 2, (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40, 2), Color.Magenta);
+                //spriteBatch.Draw(none, new Rectangle((Data.tileSel1[0] - Data.cameraPosition[0]) * 40, (((Data.tileSel1[1] - Data.cameraPosition[1]) + (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1)) * 20) - 2, (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1) * 40, 2), Color.Magenta);
                 // right
-                spriteBatch.Draw(none, new Rectangle((((Data.tileSel1[0] - Data.cameraPosition[0]) + (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1)) * 40) - 2, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, 2, (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20), Color.Magenta);
+                //spriteBatch.Draw(none, new Rectangle((((Data.tileSel1[0] - Data.cameraPosition[0]) + (Math.Abs(Data.tileSel1[0] - Data.tileSel2[0]) + 1)) * 40) - 2, (Data.tileSel1[1] - Data.cameraPosition[1]) * 20, 2, (Math.Abs(Data.tileSel1[1] - Data.tileSel2[1]) + 1) * 20), Color.Magenta);
+                int[] pixelUpLeft = Graphics.getTilePixelPosition(relx1, rely1, false, false);
+                int[] pixelUpRight = Graphics.getTilePixelPosition(relx2, rely1, true, false);
+                int[] pixelDownLeft = Graphics.getTilePixelPosition(relx1, rely2, false, true);
+                int[] pixelDownRight = Graphics.getTilePixelPosition(relx2, rely2, true, true);
+                Rectangle up = new Rectangle(pixelUpLeft[0], pixelUpLeft[1], pixelUpRight[0] - pixelUpLeft[0], 2);
+                Rectangle bottom = new Rectangle(pixelDownLeft[0], pixelDownLeft[1] - 1, pixelDownRight[0] - pixelDownLeft[0], 2);
+                Rectangle left = new Rectangle(pixelUpLeft[0], pixelUpLeft[1], 2, pixelDownLeft[1] - pixelUpLeft[1]);
+                Rectangle right = new Rectangle(pixelUpRight[0] - 1, pixelUpRight[1], 2, pixelDownRight[1] - pixelUpRight[1]);
+                spriteBatch.Draw(none, up, Color.Magenta);
+                spriteBatch.Draw(none, bottom, Color.Magenta);
+                spriteBatch.Draw(none, left, Color.Magenta);
+                spriteBatch.Draw(none, right, Color.Magenta);
             }
             spriteBatch.End();
             base.Draw(gameTime);
@@ -644,17 +659,25 @@ namespace OpenBAHN
     }
     public class Graphics
     {
-        public static int[] getTilePixelPosition(int x, int y, bool lastPixelX, bool lastPixelY)
+        public static int[] getTilePixelPosition(int x, int y, bool lastPixelX, bool lastPixelY, int offsetX = 0, int offsetY = 0)
         {
             int returnX = x * 40;
             int returnY = y * 20;
             if (lastPixelX)
             {
-                returnX += 39;
+                returnX += 39 - offsetX;
+            }
+            else
+            {
+                returnX += offsetX;
             }
             if (lastPixelY)
             {
-                returnY += 19;
+                returnY += 19 - offsetY;
+            }
+            else
+            {
+                returnX += offsetY;
             }
             return new int[] { returnX, returnY };
         }
